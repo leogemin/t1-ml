@@ -1,117 +1,295 @@
-# Roteiro do vídeo — T1 Interpretabilidade (≈ 12–13 min)
+# Roteiro do vídeo — T1 Interpretabilidade (leitura direta, ≈ 12 min)
 
-**Formato sugerido:** slides com as figuras de `figures/` + trechos do notebook rolando na tela.
-Apresentação individual. Os tempos são indicativos. Fale o texto com as suas palavras; não leia.
+**Como usar:**
+- Leia só o texto normal. É a fala completa, pronta para ler.
+- As linhas `🎬 TELA:` dizem o que mostrar. Troque a tela *antes* de começar o parágrafo.
+- `⏸` é uma pausa curta (respire e troque a tela, se for o caso).
+- Lido em ritmo calmo, o texto dá cerca de 12 minutos.
 
----
-
-## 1. Abertura — (0:00–0:45)
-**Tela:** título + “Leonardo Gemin Pereira” + pergunta em destaque: *“Por que o modelo chegou a essa conclusão?”*
-
-> “Imagine que você pediu um empréstimo e o banco recusou. Você tem direito de saber o porquê, e a LGPD
-> garante isso. Neste trabalho eu treinei três classificadores — KNN, Naïve Bayes e Árvore de Decisão —
-> para prever risco de crédito. Depois investiguei se dá para responder *por que* cada um decidiu o que decidiu.”
-
-## 2. Dataset e problema — (0:45–2:00)
-**Tela:** tabela de requisitos → `eda_categoricas.png`
-
-- German Credit (UCI): 1000 clientes, 20 atributos (7 numéricos e 13 categóricos), 30% de maus pagadores.
-- Por que este dataset: é uma decisão regulada e tem atributos sensíveis (idade, sexo/estado civil, estrangeiro).
-- Traduzi os códigos (`A11` → “saldo < 0 DM”) para que as explicações fossem legíveis.
-- **Mostre no gráfico:** o saldo em conta é o atributo mais forte (49% de inadimplência com saldo negativo
-  contra 12% sem conta).
-- **Plante a dúvida:** “histórico *crítico* tem a *menor* inadimplência. Guarde isso, vou voltar nesse ponto.”
-
-## 3. Metodologia de treino — (2:00–3:30)
-**Tela:** tabela de pré-processamento por modelo + célula do GridSearch
-
-- Divisão 80/20 estratificada. O teste não é usado em nenhuma decisão.
-- Um pré-processamento para cada modelo, com o porquê:
-  - KNN: padronização + one-hot, porque usa distância;
-  - NB: tudo discretizado (`CategoricalNB`), para obter tabelas de probabilidade legíveis;
-  - Árvore: one-hot sem escala, profundidade limitada para continuar legível.
-- GridSearch com CV de 5 folds, otimizando o F1 da classe “mau”.
-- **Decisão que vale contar:** “No começo otimizei AUC. O KNN escolheu k = 93 e, no limiar 0,5, só
-  detectava 3% dos maus pagadores. Por isso troquei para F1.”
-
-## 4. Avaliação — (3:30–4:45)
-**Tela:** tabela de resultados + `avaliacao.png`
-
-- Linha de base “sempre bom” = 70% de acurácia. Por isso a acurácia engana.
-- NB: melhor AUC (0,78) e precisão. Árvore: maior recall (0,85) e menor custo, mas recusa muitos bons
-  clientes. KNN: pior F1.
-- Custo 5:1. Com o limiar de 1/6, os três ficam com custo parecido. “Parte da diferença entre modelos é
-  escolha de limiar.”
-- Transição: “Os números estão bons. Mas *por que* eles decidem assim?”
-
-## 5. Árvore de Decisão — (4:45–6:00)
-**Tela:** `arvore.png` → caminho do cliente-exemplo (célula com “nó 0… FOLHA”)
-
-- Apresente o cliente-exemplo: um mau pagador real, com saldo negativo, 45 meses de prazo e 11.816 DM.
-- Leia a árvore em voz alta: “Tem conta corrente? Prazo > 12 meses? Poupança < 100 DM? → risco 72%.”
-- O modelo inteiro cabe em 8 regras. Usa 7 de 20 features, e nenhuma é sensível.
-- Limitação: as regras são grosseiras (todo mundo com conta e prazo > 12 meses é “mau”), a árvore tem o
-  menor AUC e é instável.
-
-## 6. Naïve Bayes — (6:00–7:30)
-**Tela:** tabela de `checking_status` → `nb_log_razao.png` → `nb_local.png`
-
-- Fórmula na tela: o log-odds é a priori + uma soma de evidências. Cada feature contribui com um número exato.
-- “Saldo negativo multiplica a chance de ‘mau’ por 2,1.”
-- Decomposição do cliente: −0,85 + 2,78 = 1,93 → 87%, o mesmo valor do modelo. A explicação é exata.
-- **Volte à dúvida:** o NB aprendeu que “todos os créditos pagos” *aumenta* o risco e “conta crítica” o
-  *diminui*. O modelo é fiel aos dados, mas os dados provavelmente têm viés de seleção ou erro de
-  codificação (Grömping, 2019).
-- Limitação: a independência é falsa, então evidências correlacionadas são contadas em dobro.
-
-## 7. KNN + SHAP + LIME — (7:30–9:30)
-**Tela:** tabela de vizinhos → `knn_shap_global.png` → `knn_shap_local.png` → `knn_lime_local.png`
-
-- Por que é difícil: não há parâmetros. “Seus 5 vizinhos mais parecidos: 3 maus, 2 bons.” Isso diz *quem*,
-  não *o quê*.
-- SHAP em uma frase: a teoria dos jogos divide a previsão entre as features.
-- **Achado principal:** sexo/estado civil é a 3ª feature mais importante do KNN. A causa é o one-hot +
-  distância, que dá peso igual a todas as categorias. “Nenhuma métrica mostraria isso.”
-- LIME: concorda com o SHAP no principal (saldo, prazo, poupança) e diverge nos detalhes. O R² local é de
-  0,19, então a explicação é pouco fiel.
-- Ressalva: SHAP e LIME explicam o comportamento do modelo, não a causalidade.
-
-## 8. Comparação — (9:30–11:15)
-**Tela:** `agnosticas_3modelos.png` → `concordancia_rankings.png` → `shap_local_3modelos.png`
-
-- Concordam no topo: o saldo em conta é o nº 1 em todas as 8 medidas.
-- Fora do topo, a concordância é moderada (Spearman de 0,5 a 0,6): `purpose` e `credit_history` importam
-  para o NB e o KNN, mas não para a árvore.
-- **Mesmo cliente, três justificativas:** o NB cita o histórico, a árvore cita saldo + poupança e o KNN
-  cita o prazo. “Se o banco tivesse que explicar a recusa, a resposta dependeria do modelo.”
-  (efeito Rashomon)
-- Limitações em uma linha cada:
-  - Árvore: só é legível se for rasa;
-  - NB: independência falsa;
-  - KNN: depende de explicações post-hoc e aproximadas.
-
-## 9. Importância da interpretabilidade e conclusão — (11:15–12:45)
-**Tela:** quatro bullets do desafio final
-
-> “Avaliar um modelo é responder duas perguntas: *ele acerta?* e *por que ele acerta?*”
-
-1. Confirmou que os modelos usam variáveis financeiras legítimas, o que gera confiança.
-2. Revelou uma regra espúria nos dados (histórico de crédito).
-3. Detectou o uso de um atributo sensível pelo KNN.
-4. Mostrou que a explicação dada ao cliente depende do modelo.
-
-- Recomendação:
-  - Naïve Bayes, pelo equilíbrio entre desempenho e explicação exata;
-  - a árvore, para comunicar regras a gestores;
-  - o KNN não deve ser usado como está.
-- Fechamento: “A interpretabilidade transforma a previsão em apoio a uma decisão humana informada, e não em
-  uma resposta opaca.” + link do repositório.
+**Antes de gravar, abra:**
+- o notebook `notebooks/t1_interpretabilidade.ipynb`, com zoom de 125% ou mais;
+- as imagens da pasta `figures/`, para mostrar em tela cheia (ou em slides).
 
 ---
 
-### Checklist de gravação
-- [ ] Slide de abertura com o nome: Leonardo Gemin Pereira
-- [ ] Gravar em 1080p, com o zoom do notebook ≥ 125% para ficar legível
-- [ ] Cronometrar: alvo de 12–13 min (limite entre 10 e 15)
-- [ ] Subir no YouTube como **Não listado** e colar o link em `link_video.txt`
-- [ ] Conferir se os pontos da Etapa 5 foram cobertos: dataset ✔ metodologia ✔ avaliação ✔ interpretabilidade ✔ comparação ✔ importância ✔ conclusões ✔
+## 1. Abertura (≈ 45 s)
+
+🎬 TELA: slide com o título “Interpretabilidade de Modelos de Aprendizado de Máquina”, “Leonardo Gemin Pereira” e a pergunta *“Por que o modelo chegou a essa conclusão?”*
+
+Olá, meu nome é Leonardo Gemin Pereira, e este é o meu trabalho sobre interpretabilidade de modelos de
+aprendizado de máquina.
+
+Imagine que você pede um empréstimo e o banco recusa. A primeira pergunta que você faz é: por quê?
+E essa pergunta não é só curiosidade. A Lei Geral de Proteção de Dados garante o direito de revisão
+de decisões automatizadas. ⏸
+
+Neste trabalho eu treinei três classificadores — KNN, Naïve Bayes e Árvore de Decisão — para prever o
+risco de crédito de clientes de um banco. E depois fui além das métricas. Investiguei se é possível
+responder exatamente essa pergunta: por que o modelo chegou a essa conclusão?
+
+---
+
+## 2. Dataset e problema (≈ 1 min 15 s)
+
+🎬 TELA: notebook, seção 1 — tabela de requisitos do dataset
+
+O conjunto de dados é o German Credit, do repositório UCI. São mil clientes que receberam crédito em um
+banco alemão. Cada um está classificado como bom pagador ou mau pagador: setecentos bons e trezentos maus.
+
+São vinte atributos — sete numéricos, como prazo, valor do crédito e idade, e treze categóricos, como
+saldo em conta, histórico de crédito e finalidade do empréstimo. Então ele atende a todos os requisitos:
+é um problema de classificação, tem variáveis numéricas e categóricas e tem bem mais de cem instâncias. ⏸
+
+Escolhi esse dataset por dois motivos. Primeiro, crédito é uma decisão regulada, onde explicar é
+obrigação. Segundo, ele tem atributos sensíveis — idade, sexo e estado civil, e se a pessoa é
+trabalhadora estrangeira. Isso me permite verificar se os modelos estão se apoiando neles.
+
+Um detalhe: os valores originais vêm codificados, como “A11” e “A34”. Eu traduzi todos para rótulos
+legíveis, como “saldo negativo” ou “sem conta corrente”. Uma explicação só é útil se a pessoa entende.
+
+🎬 TELA: `figures/eda_categoricas.png`
+
+Na análise exploratória, o atributo que mais chama atenção é o saldo em conta corrente. Quem tem saldo
+negativo tem quarenta e nove por cento de inadimplência. Quem não tem conta corrente, só doze por cento. ⏸
+
+E aqui tem algo estranho. Olhe o histórico de crédito. Quem tem histórico “crítico” tem a *menor* taxa de
+inadimplência, dezessete por cento. E quem pagou todos os créditos tem a maior. Isso contraria o bom
+senso. Guarde essa informação, porque eu vou voltar nela mais adiante.
+
+---
+
+## 3. Metodologia de treino (≈ 1 min 30 s)
+
+🎬 TELA: notebook, seção 2.2 — tabela de pré-processamento por modelo
+
+Para o treinamento, eu dividi os dados em oitenta por cento para treino e vinte por cento para teste, de
+forma estratificada. Assim, os dois conjuntos mantêm a proporção de trinta por cento de maus pagadores. O
+conjunto de teste não foi usado em nenhuma decisão. Ele serve só para a avaliação final.
+
+Não havia valores ausentes nem linhas duplicadas, então não foi necessário imputar dados. ⏸
+
+Cada algoritmo tem premissas diferentes, então eu fiz um pré-processamento específico para cada um:
+
+- **KNN:** ele calcula distâncias. Por isso padronizei as variáveis numéricas — senão o valor do crédito,
+  que chega a dezoito mil, dominaria todo o resto. As categóricas foram transformadas com one-hot.
+- **Naïve Bayes:** usei a versão categórica e transformei as variáveis numéricas em faixas. Assim o modelo
+  aprende tabelas de probabilidade que dá para ler diretamente, o que vai ser essencial na parte de
+  interpretabilidade.
+- **Árvore de Decisão:** não precisa de escala. Só apliquei one-hot nas categóricas, para que cada nó faça
+  uma pergunta simples, do tipo “o cliente tem tal característica?”.
+
+Tudo isso foi feito dentro de pipelines, para evitar vazamento de dados.
+
+🎬 TELA: notebook, célula do GridSearch com os melhores parâmetros
+
+Os hiperparâmetros foram escolhidos com busca em grade e validação cruzada de cinco partes, otimizando o
+F1 da classe “mau pagador”. ⏸
+
+E aqui vale contar uma decisão. No começo eu otimizei pela AUC. O KNN escolheu noventa e três vizinhos.
+Ele ordenava bem os clientes, mas na prática só detectava três por cento dos maus pagadores. Um modelo
+inútil. Por isso troquei para o F1, que equilibra precisão e recall da classe que interessa. Também
+limitei a árvore a no máximo cinco níveis, porque uma árvore enorme só é interpretável na teoria.
+
+---
+
+## 4. Avaliação (≈ 1 min 15 s)
+
+🎬 TELA: notebook, seção 2.4 — tabela de resultados
+
+Agora os resultados no conjunto de teste. Primeiro, uma referência: um modelo que diz que todo mundo é bom
+pagador já acerta setenta por cento. Por isso a acurácia sozinha engana, e eu usei também precisão,
+recall, F1, acurácia balanceada e AUC. ⏸
+
+- **Naïve Bayes:** teve a melhor AUC, zero vírgula setenta e oito, e a melhor precisão.
+- **Árvore de Decisão:** teve o maior recall, oitenta e cinco por cento. Ela pega quase todos os maus
+  pagadores, mas, em troca, recusa muitos bons clientes.
+- **KNN:** ficou com o pior F1. Como setenta por cento da base é de bons pagadores, os vizinhos tendem a
+  ser bons, e ele raramente prevê “mau”.
+
+🎬 TELA: notebook, tabela do limiar de custo
+
+O próprio dataset define um custo: aprovar um mau pagador custa cinco vezes mais que recusar um bom. Se eu
+ajusto o limiar de decisão para esse custo, os três modelos ficam com custo total parecido. Ou seja, parte
+da diferença entre eles é só escolha de limiar. ⏸
+
+Os três modelos são claramente melhores que a referência. Então o desempenho é suficiente para a pergunta
+principal: por que eles decidem assim?
+
+---
+
+## 5. Árvore de Decisão (≈ 1 min 15 s)
+
+🎬 TELA: notebook, seção 3 — tabela do cliente-exemplo
+
+Para tornar a análise concreta, escolhi um cliente-exemplo do conjunto de teste. É um mau pagador real:
+saldo negativo em conta, crédito de quarenta e cinco meses, quase doze mil marcos e poupança abaixo de
+cem. Os três modelos o classificam como alto risco. Vou explicar esse cliente com cada técnica.
+
+🎬 TELA: `figures/arvore.png`
+
+Começando pela árvore, que é o modelo mais transparente: a própria estrutura é a explicação. O modelo
+inteiro cabe em oito regras. ⏸
+
+A primeira pergunta é: o cliente tem conta corrente? Se tem, e o prazo é maior que doze meses, ele já é
+classificado como mau pagador. Se não tem conta corrente, ele só é considerado mau se já tem outro
+parcelamento e pede mais de três mil e quatrocentos marcos.
+
+🎬 TELA: notebook, célula com o caminho de decisão (“nó 0 … FOLHA”)
+
+Para o cliente-exemplo, o caminho é: tem conta, prazo de quarenta e cinco meses, poupança abaixo de cem.
+Risco de setenta e dois por cento. É uma explicação completa e fiel, que qualquer analista consegue
+conferir. ⏸
+
+Outro ponto importante: a árvore usa só sete das vinte variáveis, e nenhuma delas é sensível. A limitação
+é que essas regras são grosseiras. Todo mundo que cai na mesma folha recebe a mesma resposta. Por isso
+ela tem a menor AUC dos três.
+
+---
+
+## 6. Naïve Bayes (≈ 1 min 30 s)
+
+🎬 TELA: notebook, seção 3.2 — fórmula e tabela de `checking_status`
+
+O Naïve Bayes usa o teorema de Bayes, assumindo que as variáveis são independentes. A vantagem é que, em
+escala logarítmica, a decisão vira uma soma. Cada variável contribui com um número exato a favor ou contra
+o cliente. ⏸
+
+Nesta tabela estão as probabilidades condicionais do saldo em conta. Saldo negativo é muito mais comum
+entre maus pagadores. Na prática, ele multiplica a chance de ser mau pagador por cerca de duas vezes. Já
+não ter conta corrente divide essa chance por três.
+
+🎬 TELA: `figures/nb_local.png`
+
+Para o cliente-exemplo, eu somo essas contribuições. O ponto de partida, a probabilidade a priori, vale
+menos zero vírgula oitenta e cinco. As evidências somam mais dois vírgula setenta e oito. O total dá
+oitenta e sete por cento de risco — exatamente o que o modelo responde. A explicação não é uma
+aproximação, é a conta do próprio modelo. ⏸
+
+🎬 TELA: `figures/nb_log_razao.png`
+
+E agora volto àquele ponto estranho. O Naïve Bayes aprendeu que ter histórico “crítico” *reduz* o risco, e
+que ter pagado todos os créditos *aumenta* o risco. O modelo está sendo fiel aos dados. O problema está
+nos dados. Isso provavelmente é viés de seleção: o banco só aprovou os clientes críticos que eram mais
+seguros. Também existe um erro de codificação documentado nesse dataset, em um artigo de Grömping, de
+2019. ⏸
+
+Nenhuma métrica mostraria isso. Só a interpretabilidade. A limitação do Naïve Bayes é a premissa de
+independência, que é falsa: variáveis correlacionadas, como prazo e valor, acabam sendo contadas em dobro.
+
+---
+
+## 7. KNN, SHAP e LIME (≈ 2 min)
+
+🎬 TELA: notebook, seção 3.3 — tabela dos vizinhos do cliente-exemplo
+
+O KNN é o mais difícil de interpretar. Ele não aprende regras nem probabilidades. Ele só procura os
+clientes mais parecidos e faz uma votação. ⏸
+
+Aqui estão os cinco vizinhos do cliente-exemplo: três maus pagadores e dois bons. Isso me diz *quem* são
+os clientes parecidos, mas não diz *quais características* pesaram. Para isso eu precisei de ferramentas
+externas.
+
+🎬 TELA: `figures/knn_shap_global.png`
+
+A primeira é o SHAP. Ele usa uma ideia da teoria dos jogos para dividir a previsão entre as variáveis, de
+forma justa. Apliquei o SHAP sobre as vinte variáveis originais, para que a explicação fale a língua do
+negócio. ⏸
+
+E aqui está o achado mais importante do trabalho. Para o KNN, sexo e estado civil é a terceira variável
+mais importante. Na árvore, ela nem é usada. No Naïve Bayes, fica em décimo lugar. ⏸
+
+A causa é técnica. Com one-hot e distância, todas as variáveis categóricas pesam igual na hora de definir
+quem é vizinho de quem. O KNN não sabe que essa variável é pouco informativa. Ou seja: um atributo
+sensível está influenciando decisões de crédito por um efeito colateral do pré-processamento. E, de novo,
+nenhuma métrica de desempenho revelaria isso.
+
+🎬 TELA: `figures/knn_shap_local.png`
+
+Para o cliente-exemplo, o SHAP mostra que o saldo negativo e o prazo de quarenta e cinco meses foram os
+principais motivos do risco.
+
+🎬 TELA: `figures/knn_lime_local.png`
+
+A segunda ferramenta é o LIME. Ele cria pequenas variações do cliente e ajusta um modelo linear simples ao
+redor dele. O LIME concorda com o SHAP no principal: saldo negativo, prazo longo e pouca poupança. Mas
+discorda nos fatores secundários. E o modelo linear local explicou só dezenove por cento do comportamento
+do KNN nessa região, ou seja, é uma explicação pouco fiel. ⏸
+
+Uma ressalva importante: SHAP e LIME explicam o comportamento do modelo, não a realidade. São aproximações
+feitas depois do treino.
+
+---
+
+## 8. Comparação entre os modelos (≈ 1 min 45 s)
+
+🎬 TELA: `figures/agnosticas_3modelos.png`
+
+Para comparar os três modelos lado a lado, apliquei duas ferramentas iguais para todos: a importância por
+permutação e o SHAP. ⏸
+
+Eles concordam no topo. O saldo em conta corrente é a variável número um em todas as oito medidas que
+calculei, nos três modelos. Prazo e poupança também aparecem entre as mais importantes na maioria.
+
+🎬 TELA: `figures/concordancia_rankings.png`
+
+Fora do topo, a concordância é só moderada. A correlação entre os rankings fica entre zero vírgula cinco e
+zero vírgula seis. A finalidade do crédito e o histórico importam para o Naïve Bayes e para o KNN, mas a
+árvore nem usa. ⏸
+
+🎬 TELA: `figures/shap_local_3modelos.png`
+
+E este gráfico resume tudo. É o mesmo cliente, explicado pelos três modelos. Todos concordam que ele é de
+risco. Mas o motivo principal muda:
+
+- para o **Naïve Bayes**, é o histórico de crédito — justamente a regra estranha;
+- para a **árvore**, é o saldo negativo junto com a poupança baixa;
+- para o **KNN**, o prazo pesa quase tanto quanto o saldo.
+
+Se o banco tivesse que explicar a recusa para esse cliente, a resposta dependeria do modelo escolhido.
+Isso tem nome: efeito Rashomon. Vários modelos igualmente bons, com raciocínios diferentes. ⏸
+
+Resumindo as limitações:
+
+- a **árvore** só é legível se for rasa, e isso custa desempenho;
+- o **Naïve Bayes** assume uma independência que não existe;
+- o **KNN** depende de explicações aproximadas e da forma como a distância é calculada.
+
+---
+
+## 9. Importância da interpretabilidade e conclusão (≈ 1 min 30 s)
+
+🎬 TELA: notebook, seção 5 — Desafio final
+
+Para fechar, a pergunta do desafio: como a interpretabilidade ajuda a usar previsões de forma mais
+consciente? ⏸
+
+Neste trabalho, ela fez quatro coisas que nenhuma métrica faria:
+
+1. **Confiança:** confirmou que os três modelos se apoiam em variáveis financeiras legítimas — saldo,
+   prazo e poupança.
+2. **Problema nos dados:** revelou uma regra provavelmente errada, a do histórico de crédito.
+3. **Viés:** detectou que o KNN usa sexo e estado civil como uma das variáveis mais importantes.
+4. **Explicação ao cliente:** mostrou que a justificativa dada ao cliente depende do modelo.
+
+Com base nisso, minha recomendação é a seguinte:
+
+- usar o **Naïve Bayes**, que teve a melhor AUC e tem uma explicação exata — depois de revisar a variável
+  de histórico de crédito;
+- usar a **árvore** para comunicar regras aos gestores;
+- **não usar o KNN** como está.
+
+🎬 TELA: slide final com “Ele acerta? / Por que ele acerta?” + link do repositório
+
+Avaliar um modelo de aprendizado de máquina é responder duas perguntas: ele acerta? E por que ele acerta?
+A segunda pergunta é o que transforma uma previsão em apoio a uma decisão humana informada, e não em uma
+resposta opaca. ⏸
+
+O código e toda a documentação estão no repositório do GitHub. Obrigado!
+
+---
+
+### Checklist rápido
+- [ ] Notebook aberto com zoom ≥ 125% e figuras de `figures/` à mão
+- [ ] Slide de abertura e slide final com o nome **Leonardo Gemin Pereira**
+- [ ] Gravar em 1080p; ler com calma (alvo de 11–13 min, limite de 10–15)
+- [ ] Publicar no YouTube como **Não listado** e colar o link em `link_video.txt`
