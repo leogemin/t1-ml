@@ -1,0 +1,3 @@
+Statlog (German Credit Data) - Hofmann, H. (1994). UCI Machine Learning Repository.
+https://archive.ics.uci.edu/dataset/144/statlog+german+credit+data  (DOI 10.24432/C5NC77)
+Arquivo: german.data (versão simbólica original, 1000 linhas, 20 atributos + alvo; 1=bom, 2=mau).
