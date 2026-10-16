@@ -2,8 +2,8 @@
 
 KNN × Naïve Bayes × Árvore de Decisão no problema de **risco de crédito** (German Credit, UCI).
 
-**Disciplina:** Aprendizado de Máquina — Profª. Drª. Daniela Oliveira Ferreira do Amaral
-**Aluno:** Leonardo Gemin Pereira (trabalho individual)
+**Disciplina:** Aprendizado de Máquina 
+**Aluno:** Leonardo Gemin Pereira 
 **Vídeo:** ver [`link_video.txt`](link_video.txt)
 
 ## Estrutura
@@ -13,7 +13,6 @@ KNN × Naïve Bayes × Árvore de Decisão no problema de **risco de crédito** 
 | [`notebooks/t1_interpretabilidade.ipynb`](notebooks/t1_interpretabilidade.ipynb) | **Artefato principal**, já executado. Código + justificativas + discussão de todas as etapas. |
 | `data/german.data` | Dataset original (UCI Statlog German Credit, 1000 × 20 + alvo). |
 | `figures/` | Figuras geradas pelo notebook (usadas no vídeo). |
-| [`roteiro_video.md`](roteiro_video.md) | Roteiro do vídeo de apresentação (10–15 min). |
 | `link_video.txt` | Link do vídeo no YouTube (não listado). |
 | `requirements.txt` | Dependências com versões. |
 
