@@ -4,7 +4,7 @@ KNN × Naïve Bayes × Árvore de Decisão no problema de **risco de crédito** 
 
 **Disciplina:** Aprendizado de Máquina 
 **Aluno:** Leonardo Gemin Pereira 
-**Vídeo:** ver [`link_video.txt`](link_video.txt)
+**Vídeo:** [Link do Vídeo](https://youtu.be/YS7RvFXSe44)
 
 ## Estrutura
 
