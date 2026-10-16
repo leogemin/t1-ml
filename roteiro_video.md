@@ -1,29 +1,28 @@
 # Roteiro do vídeo — T1 Interpretabilidade (≈ 12–13 min)
 
 **Formato sugerido:** slides com as figuras de `figures/` + trechos do notebook rolando na tela.
-**Divisão para 3 integrantes:** A = blocos 1–3 · B = blocos 4–6 · C = blocos 7–9.
-Os tempos são indicativos. Fale o texto com as suas palavras; não leia.
+Apresentação individual. Os tempos são indicativos. Fale o texto com as suas palavras; não leia.
 
 ---
 
-## 1. Abertura — (0:00–0:45) · A
-**Tela:** título + nomes + pergunta em destaque: *“Por que o modelo chegou a essa conclusão?”*
+## 1. Abertura — (0:00–0:45)
+**Tela:** título + “Leonardo Gemin Pereira” + pergunta em destaque: *“Por que o modelo chegou a essa conclusão?”*
 
 > “Imagine que você pediu um empréstimo e o banco recusou. Você tem direito de saber o porquê, e a LGPD
-> garante isso. Neste trabalho treinamos três classificadores — KNN, Naïve Bayes e Árvore de Decisão —
-> para prever risco de crédito. Depois investigamos se dá para responder *por que* cada um decidiu o que decidiu.”
+> garante isso. Neste trabalho eu treinei três classificadores — KNN, Naïve Bayes e Árvore de Decisão —
+> para prever risco de crédito. Depois investiguei se dá para responder *por que* cada um decidiu o que decidiu.”
 
-## 2. Dataset e problema — (0:45–2:00) · A
+## 2. Dataset e problema — (0:45–2:00)
 **Tela:** tabela de requisitos → `eda_categoricas.png`
 
 - German Credit (UCI): 1000 clientes, 20 atributos (7 numéricos e 13 categóricos), 30% de maus pagadores.
 - Por que este dataset: é uma decisão regulada e tem atributos sensíveis (idade, sexo/estado civil, estrangeiro).
-- Traduzimos os códigos (`A11` → “saldo < 0 DM”) para que as explicações fossem legíveis.
+- Traduzi os códigos (`A11` → “saldo < 0 DM”) para que as explicações fossem legíveis.
 - **Mostre no gráfico:** o saldo em conta é o atributo mais forte (49% de inadimplência com saldo negativo
   contra 12% sem conta).
-- **Plante a dúvida:** “histórico *crítico* tem a *menor* inadimplência. Guardem isso, a gente volta nesse ponto.”
+- **Plante a dúvida:** “histórico *crítico* tem a *menor* inadimplência. Guarde isso, vou voltar nesse ponto.”
 
-## 3. Metodologia de treino — (2:00–3:30) · A
+## 3. Metodologia de treino — (2:00–3:30)
 **Tela:** tabela de pré-processamento por modelo + célula do GridSearch
 
 - Divisão 80/20 estratificada. O teste não é usado em nenhuma decisão.
@@ -32,10 +31,10 @@ Os tempos são indicativos. Fale o texto com as suas palavras; não leia.
   - NB: tudo discretizado (`CategoricalNB`), para obter tabelas de probabilidade legíveis;
   - Árvore: one-hot sem escala, profundidade limitada para continuar legível.
 - GridSearch com CV de 5 folds, otimizando o F1 da classe “mau”.
-- **Decisão que vale contar:** “No começo otimizamos AUC. O KNN escolheu k = 93 e, no limiar 0,5, só
-  detectava 3% dos maus pagadores. Por isso trocamos para F1.”
+- **Decisão que vale contar:** “No começo otimizei AUC. O KNN escolheu k = 93 e, no limiar 0,5, só
+  detectava 3% dos maus pagadores. Por isso troquei para F1.”
 
-## 4. Avaliação — (3:30–4:45) · B
+## 4. Avaliação — (3:30–4:45)
 **Tela:** tabela de resultados + `avaliacao.png`
 
 - Linha de base “sempre bom” = 70% de acurácia. Por isso a acurácia engana.
@@ -45,7 +44,7 @@ Os tempos são indicativos. Fale o texto com as suas palavras; não leia.
   escolha de limiar.”
 - Transição: “Os números estão bons. Mas *por que* eles decidem assim?”
 
-## 5. Árvore de Decisão — (4:45–6:00) · B
+## 5. Árvore de Decisão — (4:45–6:00)
 **Tela:** `arvore.png` → caminho do cliente-exemplo (célula com “nó 0… FOLHA”)
 
 - Apresente o cliente-exemplo: um mau pagador real, com saldo negativo, 45 meses de prazo e 11.816 DM.
@@ -54,7 +53,7 @@ Os tempos são indicativos. Fale o texto com as suas palavras; não leia.
 - Limitação: as regras são grosseiras (todo mundo com conta e prazo > 12 meses é “mau”), a árvore tem o
   menor AUC e é instável.
 
-## 6. Naïve Bayes — (6:00–7:30) · B
+## 6. Naïve Bayes — (6:00–7:30)
 **Tela:** tabela de `checking_status` → `nb_log_razao.png` → `nb_local.png`
 
 - Fórmula na tela: o log-odds é a priori + uma soma de evidências. Cada feature contribui com um número exato.
@@ -65,7 +64,7 @@ Os tempos são indicativos. Fale o texto com as suas palavras; não leia.
   codificação (Grömping, 2019).
 - Limitação: a independência é falsa, então evidências correlacionadas são contadas em dobro.
 
-## 7. KNN + SHAP + LIME — (7:30–9:30) · C
+## 7. KNN + SHAP + LIME — (7:30–9:30)
 **Tela:** tabela de vizinhos → `knn_shap_global.png` → `knn_shap_local.png` → `knn_lime_local.png`
 
 - Por que é difícil: não há parâmetros. “Seus 5 vizinhos mais parecidos: 3 maus, 2 bons.” Isso diz *quem*,
@@ -77,7 +76,7 @@ Os tempos são indicativos. Fale o texto com as suas palavras; não leia.
   0,19, então a explicação é pouco fiel.
 - Ressalva: SHAP e LIME explicam o comportamento do modelo, não a causalidade.
 
-## 8. Comparação — (9:30–11:15) · C
+## 8. Comparação — (9:30–11:15)
 **Tela:** `agnosticas_3modelos.png` → `concordancia_rankings.png` → `shap_local_3modelos.png`
 
 - Concordam no topo: o saldo em conta é o nº 1 em todas as 8 medidas.
@@ -91,7 +90,7 @@ Os tempos são indicativos. Fale o texto com as suas palavras; não leia.
   - NB: independência falsa;
   - KNN: depende de explicações post-hoc e aproximadas.
 
-## 9. Importância da interpretabilidade e conclusão — (11:15–12:45) · C (ou todos)
+## 9. Importância da interpretabilidade e conclusão — (11:15–12:45)
 **Tela:** quatro bullets do desafio final
 
 > “Avaliar um modelo é responder duas perguntas: *ele acerta?* e *por que ele acerta?*”
@@ -111,7 +110,7 @@ Os tempos são indicativos. Fale o texto com as suas palavras; não leia.
 ---
 
 ### Checklist de gravação
-- [ ] Preencher os nomes no notebook, no README e no slide de abertura
+- [ ] Slide de abertura com o nome: Leonardo Gemin Pereira
 - [ ] Gravar em 1080p, com o zoom do notebook ≥ 125% para ficar legível
 - [ ] Cronometrar: alvo de 12–13 min (limite entre 10 e 15)
 - [ ] Subir no YouTube como **Não listado** e colar o link em `link_video.txt`
