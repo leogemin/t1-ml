@@ -6,6 +6,8 @@
 - `⏸` é uma pausa curta (respire e troque a tela, se for o caso).
 - Lido em ritmo calmo, o texto dá cerca de 12 minutos.
 
+**Slides prontos:** https://claude.ai/artifact/U7o4oetRurYmrzzjRib7q7 — 22 slides, na mesma ordem deste roteiro. A fala de cada slide está nas notas do apresentador. Para gravar, basta usar o modo Apresentar e avançar a cada `🎬 TELA`. Também dá para baixar em PPTX ou PDF.
+
 **Antes de gravar, abra:**
 - o notebook `notebooks/t1_interpretabilidade.ipynb`, com zoom de 125% ou mais;
 - as imagens da pasta `figures/`, para mostrar em tela cheia (ou em slides).
